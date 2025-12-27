@@ -2,6 +2,50 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../App';
 
+const StrategyCard: React.FC<{ stage: any; index: number; isActive: boolean; onClick: () => void }> = ({ stage, index, isActive, onClick }) => {
+  return (
+    <article 
+      onClick={onClick}
+      className={`strategy-tile relative p-6 md:p-8 border-b md:border-b-0 md:border-r border-white/10 overflow-hidden transition-all duration-700 cursor-pointer md:cursor-default min-h-[80px] md:h-[380px] ${
+        isActive ? 'bg-white/[0.06] md:bg-white/[0.04]' : 'bg-transparent'
+      }`}
+    >
+      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20 md:hidden" />
+      <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/20 md:hidden" />
+      
+      <div className={`absolute top-0 left-0 h-[2px] bg-white transition-all duration-700 ease-in-out ${isActive ? 'w-full opacity-60' : 'w-0 opacity-0'}`} />
+      
+      <div className={`flex justify-between text-tech text-[9px] md:text-[10px] text-white/25 mb-2 md:mb-0 transition-opacity duration-500 ${isActive ? 'opacity-100' : 'opacity-0 md:opacity-100'}`}>
+        <span className={`${isActive ? 'text-white/60' : ''}`}>{stage.stage}</span>
+        <span className="hidden md:inline">{stage.time}</span>
+      </div>
+      
+      <div className={`md:absolute md:bottom-8 md:left-8 md:right-8 transition-all duration-500`}>
+        <div className="flex items-center justify-between md:block py-2 md:py-0">
+          <h3 className={`font-head font-bold text-[18px] md:text-h3 md:mb-5 transition-all duration-500 ${isActive ? 'text-white translate-y-0' : 'text-white/50 md:text-white/40 translate-y-0 md:translate-y-2'}`}>
+            {stage.h}
+          </h3>
+          <span className={`md:hidden text-white/30 transition-transform duration-500 ${isActive ? 'rotate-180' : ''}`}>▼</span>
+        </div>
+
+        <div className={`overflow-hidden transition-all duration-500 ease-out ${isActive ? 'max-h-40 opacity-100 mt-4 md:mt-0' : 'max-h-0 opacity-0 md:max-h-[500px] md:opacity-100'}`}>
+          <p className={`text-tech text-[10px] md:text-[11px] leading-[1.6] ${isActive ? 'text-white/60' : 'text-white/20'}`}>
+            {stage.p}
+          </p>
+          <div className="md:hidden mt-4 pt-3 border-t border-white/5 text-[9px] text-white/20 flex gap-4 uppercase tracking-widest">
+             <span>{stage.time}</span>
+             <span>ID_{stage.stage}</span>
+          </div>
+        </div>
+
+        <div className={`absolute -bottom-4 -right-4 font-head text-[60px] md:text-[120px] font-bold select-none pointer-events-none transition-all duration-700 ${isActive ? 'text-white/[0.08] -translate-x-2 -translate-y-2' : 'text-white/[0.02]'}`}>
+          {`0${index + 1}`}
+        </div>
+      </div>
+    </article>
+  );
+};
+
 const Strategy: React.FC = () => {
   const { t, setActiveLocation } = useLanguage();
   const sectionRef = useRef<HTMLElement>(null);
@@ -14,123 +58,76 @@ const Strategy: React.FC = () => {
     { h: t('s2_t4_h'), p: t('s2_t4_p'), stage: 'STAGE_04', time: '[24–48 GODZ]' },
   ];
 
-  const handleNavClick = (idx: number) => {
-    const target = document.querySelector(`[data-idx="${idx}"]`);
-    if (target) {
-      // Offset calculation for better centering on various viewports
-      const targetRect = target.getBoundingClientRect();
-      const offset = (window.innerHeight - targetRect.height) / 2;
-      const top = window.pageYOffset + targetRect.top - offset;
-
-      window.scrollTo({
-        top,
-        behavior: 'smooth'
-      });
-      
-      setActiveIdx(idx);
-    }
-  };
-
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            setActiveLocation(t('city_dubai'));
+            setActiveLocation(t('city_warsaw'));
             const tileIdx = Number(entry.target.getAttribute('data-idx'));
-            if (!isNaN(tileIdx)) {
-              setActiveIdx(tileIdx);
-            }
+            if (!isNaN(tileIdx)) setActiveIdx(tileIdx);
           }
         });
       },
-      { 
-        // Higher threshold combined with specific root margins for precise centering detection
-        threshold: 0.5,
-        rootMargin: "-25% 0px -25% 0px"
-      }
+      { threshold: 0.5, rootMargin: "-25% 0px -25% 0px" }
     );
 
     const tiles = document.querySelectorAll('.strategy-tile');
-    tiles.forEach(tile => observer.observe(tile));
-
+    tiles.forEach((tile, idx) => {
+      tile.setAttribute('data-idx', String(idx));
+      observer.observe(tile);
+    });
     return () => observer.disconnect();
   }, [t, setActiveLocation]);
 
   return (
-    <section id="strategia" ref={sectionRef} className="py-28 bg-black">
+    <section id="strategia" ref={sectionRef} className="py-16 md:py-24 bg-black relative">
       <div className="max-w-7xl mx-auto px-6">
-        <header className="relative flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
+        <header className="relative flex flex-col md:flex-row justify-between items-start md:items-center mb-10 md:mb-12">
           <div className="max-w-xl">
-            <div className="flex items-center gap-3 font-mono text-[11px] tracking-[0.3em] text-mtg-muted2 uppercase mb-4">
+            <div className="flex items-center gap-3 text-tech text-[11px] text-mtg-muted2 mb-6">
               <span className="opacity-90">/</span> {t('s2_kicker')}
             </div>
-            <div className="flex flex-wrap gap-x-7 gap-y-2 font-head text-[clamp(34px,5.5vw,72px)] font-bold tracking-tight uppercase leading-none text-white/40">
-              <span className={`transition-colors duration-500 ${activeIdx === 0 ? 'text-white' : ''}`}>ANALIZA.</span>
-              <span className={`transition-colors duration-500 ${activeIdx === 1 || activeIdx === 2 ? 'text-white' : ''}`}>STRUKTURA.</span>
-              <span className={`transition-colors duration-500 ${activeIdx === 3 ? 'text-white' : ''}`}>RAPORT.</span>
+            <div className="flex flex-col gap-y-1.5 md:gap-y-2 text-[28px] md:text-h2 font-head font-bold leading-none text-left">
+              <span className={`transition-all duration-500 ${activeIdx === 0 ? 'text-white' : 'text-white/20'}`}>ANALIZA.</span>
+              <span className={`transition-all duration-500 ${activeIdx === 1 || activeIdx === 2 ? 'text-white' : 'text-white/20'}`}>STRUKTURA.</span>
+              <span className={`transition-all duration-500 ${activeIdx === 3 ? 'text-white' : 'text-white/20'}`}>RAPORT.</span>
             </div>
           </div>
 
-          <nav className="flex gap-4 items-center mt-8 md:mt-0 bg-white/[0.03] p-1.5 rounded-2xl border border-white/10">
-            {stages.map((_, i) => (
-              <button 
-                key={i}
-                onClick={() => handleNavClick(i)}
-                className={`group flex items-center gap-3 font-mono text-[11px] tracking-[0.22em] px-5 py-3 rounded-xl transition-all duration-500 ${
-                  activeIdx === i 
-                    ? 'text-white bg-white/20 shadow-[0_4px_25px_rgba(255,255,255,0.12)] scale-[1.08] border border-white/20' 
-                    : 'text-mtg-muted2 hover:text-white/80 border border-transparent'
-                }`}
-              >
-                <span className={`transition-opacity duration-300 ${activeIdx === i ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'}`}>
-                  {`0${i+1}`}
-                </span>
-                <span className={`rounded-[1px] transition-all duration-500 ${
-                  activeIdx === i 
-                    ? 'bg-white w-2 h-2 rotate-45 shadow-[0_0_8px_rgba(255,255,255,0.8)]' 
-                    : 'bg-white/20 w-1.5 h-1.5'
-                }`} />
-              </button>
-            ))}
-          </nav>
+          <div className="hidden md:block">
+            <nav className="flex gap-3 items-center bg-white/[0.03] p-2 rounded-2xl border border-white/10">
+              {stages.map((_, i) => (
+                <button 
+                  key={i}
+                  onClick={() => setActiveIdx(i)}
+                  className={`group flex items-center gap-3 text-tech text-[11px] px-5 py-3 rounded-xl transition-all duration-500 ${
+                    activeIdx === i ? 'text-white bg-white/20 border border-white/30' : 'text-mtg-muted2 hover:text-white/80'
+                  }`}
+                >
+                  <span>{`0${i+1}`}</span>
+                  <span className={`rounded-[1px] transition-all duration-500 ${activeIdx === i ? 'bg-white w-2 h-2 rotate-45' : 'bg-white/20 w-1.5 h-1.5'}`} />
+                </button>
+              ))}
+            </nav>
+          </div>
         </header>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 border border-white/10 bg-white/[0.01]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border border-white/10 bg-white/[0.01]">
           {stages.map((stage, i) => (
-            <article 
+            <StrategyCard 
               key={i} 
-              data-idx={i}
-              className={`strategy-tile relative h-[380px] p-8 border-r border-b lg:border-b-0 border-white/10 overflow-hidden transition-all duration-700 cursor-default ${
-                activeIdx === i ? 'bg-white/[0.04]' : 'bg-transparent'
-              }`}
-            >
-              {/* Animated highlight bar for active state */}
-              <div className={`absolute top-0 left-0 h-[2px] bg-white transition-all duration-700 ease-in-out ${activeIdx === i ? 'w-full opacity-60' : 'w-0 opacity-0'}`} />
-              
-              <div className="flex justify-between font-mono text-[10px] tracking-[0.3em] text-white/25 uppercase">
-                <span className={activeIdx === i ? 'text-white/60 transition-colors duration-500' : ''}>{stage.stage}</span>
-                <span className="whitespace-nowrap">{stage.time}</span>
-              </div>
-              
-              <div className="absolute bottom-8 left-8 right-8">
-                <h3 className={`font-head text-2xl font-bold uppercase tracking-tight mb-5 transition-all duration-500 ${activeIdx === i ? 'text-white translate-y-0' : 'text-white/40 translate-y-2'}`}>
-                  {stage.h}
-                </h3>
-                <p className={`font-mono text-[11px] tracking-[0.2em] leading-[1.7] uppercase transition-all duration-500 ${activeIdx === i ? 'text-white/50 opacity-100' : 'text-white/20 opacity-60'}`}>
-                  {stage.p}
-                </p>
-                <div className={`absolute -bottom-6 -right-6 font-head text-[120px] font-bold select-none pointer-events-none transition-all duration-700 ${activeIdx === i ? 'text-white/[0.12] -translate-x-2 -translate-y-2' : 'text-white/[0.03]'}`}>
-                  {`0${i+1}`}
-                </div>
-              </div>
-            </article>
+              stage={stage} 
+              index={i} 
+              isActive={activeIdx === i} 
+              onClick={() => setActiveIdx(i)} 
+            />
           ))}
         </div>
 
-        <div className="h-[1px] w-full bg-white/10 mt-16" />
-        <div className="font-mono text-[10px] tracking-[0.4em] text-mtg-muted2 uppercase text-center mt-6">
-          {t('sentence_time')}
+        <div className="h-[1px] w-full bg-white/10 mt-12 md:mt-16" />
+        <div className="text-tech text-[10px] text-mtg-muted2 text-center mt-8">
+          --- {t('s2_sentence')} ---
         </div>
       </div>
     </section>

@@ -2,138 +2,230 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '../App';
 
+const SplitLine = ({ text, delay, className = "" }: { text: string; delay: number; className?: string }) => {
+  const chars = text.split('');
+  
+  return (
+    <div className={`${className} flex justify-between items-center`}>
+      {chars.map((char, i) => (
+        <span
+          key={i}
+          className="inline-block animate-[dataStream_0.4s_cubic-bezier(0.16,1,0.3,1)_forwards] opacity-0"
+          style={{ 
+            animationDelay: `${delay + i * 40}ms`, 
+          }}
+        >
+          {char === ' ' ? '\u00A0' : char}
+        </span>
+      ))}
+    </div>
+  );
+};
+
+const BackgroundParticles = () => {
+  const [scrollY, setScrollY] = useState(0);
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
+      <div 
+        className="absolute top-[20%] left-[15%] w-[1px] h-[1px] bg-white rounded-full transition-transform duration-100 ease-out"
+        style={{ transform: `translateY(${scrollY * -0.2}px)` }}
+      />
+      <div 
+        className="absolute top-[40%] right-[10%] w-2 h-2 border border-white/10 rounded-full transition-transform duration-150 ease-out"
+        style={{ transform: `translateY(${scrollY * 0.15}px) scale(${1 + scrollY * 0.001})` }}
+      />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(215,178,91,0.04)_0%,transparent_60%)] animate-[pulse_12s_infinite_ease-in-out]" />
+    </div>
+  );
+};
+
 const Hero: React.FC = () => {
-  const { t } = useLanguage();
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [scrollPos, setScrollPos] = useState(0);
+  const { t, setActiveLocation } = useLanguage();
   const [isMounted, setIsMounted] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const parallaxRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
     const handleMouseMove = (e: MouseEvent) => {
+      if (!parallaxRef.current) return;
       const x = (e.clientX / window.innerWidth) - 0.5;
       const y = (e.clientY / window.innerHeight) - 0.5;
-      setMousePos({ x, y });
+      parallaxRef.current.style.transform = `translate(${x * 40}px, ${y * 30}px)`;
     };
 
     const handleScroll = () => {
-      setScrollPos(window.scrollY);
+      if (!sidebarRef.current) return;
+      const scrollPos = window.scrollY;
+      const opacity = Math.max(0, 1 - scrollPos / 400);
+      const translate = scrollPos * 0.5;
+      sidebarRef.current.style.opacity = String(opacity);
+      sidebarRef.current.style.transform = `translateY(${translate}px)`;
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
+    if (window.matchMedia("(pointer: fine)").matches) {
+      window.addEventListener('mousemove', handleMouseMove);
+    }
     window.addEventListener('scroll', handleScroll);
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // Setting FINANCE as the first location in the sequence
+          setActiveLocation(t('brand_finance'));
+        }
+      },
+      { threshold: 0.5 }
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
     };
-  }, []);
-
-  const SplitLine = ({ text, delay }: { text: string; delay: number }) => {
-    return (
-      <div className="font-head text-[clamp(44px,7.2vw,96px)] font-bold leading-[0.92] tracking-tighter whitespace-nowrap overflow-visible flex flex-wrap mb-1">
-        {text.split('').map((char, i) => (
-          <span
-            key={i}
-            className="inline-block animate-[dataStream_0.4s_steps(4)_forwards] opacity-0"
-            style={{ 
-              animationDelay: `${delay + i * 45}ms`, 
-              minWidth: char === ' ' ? '0.3em' : 'auto',
-              filter: 'blur(2px)'
-            }}
-          >
-            {char}
-          </span>
-        ))}
-      </div>
-    );
-  };
-
-  // Calculate fade out for "poufne" as it reaches about 500px scroll
-  // We use a slightly more aggressive fade and translation for a parallax look
-  const poufneOpacity = Math.max(0, 1 - scrollPos / 400);
-  const poufneTranslate = scrollPos * 0.7;
+  }, [t, setActiveLocation]);
 
   return (
-    <section className="min-h-[calc(100vh-72px)] flex items-start pt-7 pb-24 relative overflow-hidden" ref={containerRef}>
-      {/* Parallax Background Elements */}
+    <section ref={sectionRef} className="min-h-[calc(100vh-100px)] flex items-center pt-24 md:pt-32 pb-20 relative overflow-hidden bg-black">
+      <BackgroundParticles />
+
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <div 
-          className="absolute -right-[5%] top-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-white/[0.08] via-white/[0.03] to-transparent blur-[60px] transition-transform duration-700 ease-out"
-          style={{ transform: `translate(${mousePos.x * 40}px, ${mousePos.y * 30}px)` }}
-        />
-        <div 
-          className="absolute left-[10%] bottom-1/4 w-[300px] h-[300px] rounded-full bg-gradient-to-tr from-white/[0.05] to-transparent blur-[40px] transition-transform duration-500 ease-out"
-          style={{ transform: `translate(${mousePos.x * -20}px, ${mousePos.y * -15}px)` }}
+          ref={parallaxRef}
+          className="gradient-orb transition-transform duration-[600ms] ease-out"
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 w-full relative z-10 flex flex-col items-start lg:pl-20">
-        <div className="relative">
-          {/* Vertical Intro: / poufne / */}
-          <div 
-            className={`absolute left-[-40px] lg:left-[-60px] top-0 flex flex-col items-center gap-1 font-mono text-[11px] tracking-[0.28em] text-mtg-gold/60 uppercase select-none pointer-events-none transition-all duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-              isMounted ? 'opacity-100' : 'opacity-0'
-            }`}
-            style={{ 
-              transform: `translateY(${poufneTranslate + (isMounted ? 0 : 20)}px)`,
-              opacity: isMounted ? poufneOpacity : 0,
-            }}
-          >
-            <span className={`opacity-90 transition-all duration-700 delay-300 ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>/</span>
-            {'poufne'.split('').map((c, i) => (
-              <span 
-                key={i} 
-                className={`leading-none transition-all duration-700 ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
-                style={{ transitionDelay: `${400 + i * 80}ms` }}
-              >
-                {c}
-              </span>
-            ))}
-            <span className={`opacity-90 transition-all duration-700 delay-[1000ms] ${isMounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>/</span>
-          </div>
-
-          <div className="sr-only">MTG GROUP. TRANSAKCJE. GWARANCJE.</div>
+      <div className="max-w-7xl mx-auto px-6 w-full relative z-10 flex flex-col items-start md:pl-24">
+        <div className="relative w-full">
           
-          <div className="headline-wrapper">
-            <SplitLine text="MTG GROUP" delay={100} />
-            <SplitLine text="TRANSAKCJE" delay={600} />
-            <SplitLine text="GWARANCJE" delay={1100} />
+          <div 
+            ref={sidebarRef}
+            className={`md:hidden absolute left-[-32px] top-0 flex flex-col items-center gap-2 text-tech text-[10px] text-mtg-gold/40 select-none pointer-events-none transition-opacity duration-1000 ease-out ${isMounted ? 'opacity-100' : 'opacity-0'}`}
+          >
+            <span className="opacity-60">/</span>
+            {'MTG'.split('').map((c, i) => (
+              <span key={i} className="font-bold">{c}</span>
+            ))}
+            <span className="opacity-60">/</span>
           </div>
 
-          <div className="w-20 h-[1px] bg-gradient-to-r from-white/30 to-transparent mt-7 mb-5" />
+          <div className="headline-wrapper flex flex-col items-start w-full max-w-[320px] md:max-w-[850px]">
+            <div className="mb-6 md:mb-10 opacity-0 animate-[fadeInUp_1s_0.2s_ease_forwards] w-full">
+               <h1 className="font-head font-bold text-[clamp(52px,18vw,140px)] text-white tracking-tighter leading-[0.9] mb-4">
+                 MTG GROUP
+               </h1>
+               <div className="h-[2px] w-full md:w-1/2 bg-gradient-to-r from-mtg-gold to-transparent scale-x-0 origin-left animate-[scaleIn_1.2s_1s_cubic-bezier(0.16,1,0.3,1)_forwards]" />
+            </div>
+            
+            <div className="w-full flex flex-col gap-3 md:gap-5">
+              <div className="opacity-0 animate-[fadeInUp_0.8s_1.2s_ease_forwards] w-full max-w-[280px] md:max-w-[480px]">
+                <SplitLine 
+                  text="TRANSAKCJA" 
+                  delay={1200} 
+                  className="font-head font-semibold text-[clamp(24px,8vw,52px)] md:text-[56px] tracking-[0.15em] md:tracking-[0.25em] leading-none text-white/90 uppercase" 
+                />
+              </div>
+              
+              <div className="opacity-0 animate-[fadeInUp_0.8s_1.6s_ease_forwards] w-full max-w-[280px] md:max-w-[480px]">
+                <SplitLine 
+                  text="GWARANCJA" 
+                  delay={1600} 
+                  className="font-head font-semibold text-[clamp(24px,8vw,52px)] md:text-[56px] tracking-[0.15em] md:tracking-[0.25em] leading-none text-white/90 uppercase" 
+                />
+              </div>
+            </div>
+            
+            <div className="mt-16 md:mt-24 flex flex-col items-start gap-3 w-full opacity-0 animate-[fadeInUp_0.8s_2.2s_ease_forwards]">
+               <div className="flex items-center gap-5">
+                 <span className="font-head text-[14px] md:text-[18px] font-bold text-mtg-gold tracking-[0.45em] uppercase">
+                    DORADZTWO | RESTRUKTURYZACJA
+                 </span>
+               </div>
+               <div className="h-[1px] w-48 bg-mtg-gold/20" />
+            </div>
+          </div>
 
-          <p className="font-body text-base text-mtg-muted leading-[1.7] max-w-2xl opacity-0 animate-[fadeInUp_0.8s_1.8s_ease_forwards]">
-            {t('hero_desc')}
-          </p>
+          <div className="w-32 md:w-48 h-[1px] bg-gradient-to-r from-white/10 to-transparent mt-20 mb-12" />
 
-          <div className="mt-7 flex gap-4 opacity-0 animate-[fadeInUp_0.8s_2s_ease_forwards]">
-            <a href="#kontakt" className="font-mono text-[11px] tracking-[0.22em] border border-white/20 bg-white/5 px-5 py-4 rounded-xl uppercase hover:bg-white/10 transition-all flex items-center gap-3">
-              {t('hero_cta')} <span className="opacity-80">→</span>
+          <div className="max-w-2xl opacity-0 animate-[fadeInUp_0.8s_2.6s_ease_forwards]">
+            <p className="font-body text-[18px] md:text-[19px] font-normal text-white/50 leading-[1.8] tracking-wide">
+              {t('hero_desc')}
+            </p>
+          </div>
+
+          <div className="mt-16 md:mt-24 flex flex-col sm:flex-row gap-8 opacity-0 animate-[fadeInUp_0.8s_3s_ease_forwards]">
+            <a 
+              href="#strategia" 
+              className="group relative w-full sm:w-auto text-tech text-[12px] font-bold border border-white/10 bg-white/[0.02] px-12 py-6 rounded-2xl transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] active:scale-[0.98] hover:bg-white/5 hover:border-mtg-gold/40 flex items-center justify-center gap-5 overflow-hidden shadow-[0_10px_40px_-15px_rgba(0,0,0,0.5)]"
+            >
+              <span className="relative z-10 tracking-[0.15em]">EKSPLORUJ MODEL</span>
+              <span className="relative z-10 opacity-30 group-hover:opacity-100 group-hover:translate-x-2 transition-all duration-500">→</span>
+              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-mtg-gold/5 to-transparent translate-x-[-150%] group-hover:animate-[sweep_2.5s_infinite] pointer-events-none" />
             </a>
           </div>
-
-          <aside className="lg:absolute lg:right-[-250px] lg:top-16 mt-10 lg:mt-0 font-mono text-[11px] tracking-[0.28em] text-mtg-muted2 flex flex-col gap-3 uppercase select-none opacity-0 animate-[fadeInUp_0.8s_2.2s_ease_forwards]">
-            <div>{t('hero_m1')}</div>
-            <div>{t('hero_m2')}</div>
-            <div>{t('hero_m3')}</div>
-          </aside>
         </div>
       </div>
 
       <style>{`
         @keyframes dataStream {
-          0% { opacity: 0; filter: blur(8px); transform: scale(0.9); }
-          50% { opacity: 0.5; filter: blur(2px); transform: scale(1.05); }
-          100% { opacity: 1; filter: blur(0); transform: scale(1); }
+          0% { opacity: 0; transform: translateY(10px); filter: blur(4px); }
+          100% { opacity: 1; transform: translateY(0); filter: blur(0); }
         }
         @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(15px); }
+          from { opacity: 0; transform: translateY(30px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .headline-wrapper {
-          position: relative;
+        @keyframes scaleIn {
+          from { transform: scaleX(0); }
+          to { transform: scaleX(1); }
         }
+        @keyframes sweep {
+          0% { transform: translateX(-150%) skewX(-15deg); }
+          100% { transform: translateX(150%) skewX(-15deg); }
+        }
+
+        .gradient-orb {
+          position: absolute;
+          z-index: 0;
+          pointer-events: none;
+          border-radius: 9999px;
+          animation: orbAppear 4s ease forwards;
+        }
+
+        @media (min-width: 768px) {
+          .gradient-orb {
+            right: -15%;
+            top: 5%;
+            width: 900px;
+            height: 900px;
+            filter: blur(140px);
+            background: radial-gradient(circle at center, rgba(215,178,91,0.05) 0%, rgba(255,255,255,0.01) 70%, transparent 100%);
+          }
+        }
+
+        @media (max-width: 767px) {
+          .gradient-orb {
+            right: -25%;
+            top: 40%;
+            width: 350px;
+            height: 350px;
+            filter: blur(60px);
+            opacity: 0;
+            background: radial-gradient(circle at center, rgba(215,178,91,0.08) 0%, transparent 100%);
+          }
+        }
+
+        .headline-wrapper { min-height: 280px; }
+        @media (min-width: 768px) { .headline-wrapper { min-height: 480px; } }
       `}</style>
     </section>
   );

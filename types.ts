@@ -21,6 +21,7 @@ export interface TranslationDict {
   s1_i2_p: string;
   s1_i3_h: string;
   s1_i3_p: string;
+  s1_sentence: string;
   s2_kicker: string;
   s2_t1_h: string;
   s2_t1_p: string;
@@ -30,6 +31,7 @@ export interface TranslationDict {
   s2_t3_p: string;
   s2_t4_h: string;
   s2_t4_p: string;
+  s2_sentence: string;
   s3_kicker: string;
   s3_copy: string;
   s3_i1_h: string;
@@ -40,6 +42,7 @@ export interface TranslationDict {
   s3_i3_p: string;
   s3_i4_h: string;
   s3_i4_p: string;
+  s3_sentence: string;
   s4_kicker: string;
   s4_title: string;
   s4_copy: string;
@@ -60,6 +63,7 @@ export interface TranslationDict {
   s4_s4_t1: string;
   s4_s4_t2: string;
   s4_s4_t3: string;
+  s4_sentence: string;
   s5_kicker: string;
   s5_title: string;
   s5_copy: string;
@@ -68,6 +72,7 @@ export interface TranslationDict {
   s5_q3: string;
   s5_q4: string;
   s5_q5: string;
+  s5_sentence: string;
   s6_kicker: string;
   s6_title: string;
   s6_copy: string;
@@ -78,6 +83,7 @@ export interface TranslationDict {
   s6_r3_pl: string;
   s6_r3_en: string;
   s6_r4_pl: string;
+  s6_sentence: string;
   s7_kicker: string;
   s7_title: string;
   s7_copy: string;
@@ -89,6 +95,8 @@ export interface TranslationDict {
   s7_f2: string;
   s7_f3: string;
   s7_submit: string;
+  s7_call_cta: string;
+  s7_sentence: string;
   sentence_time: string;
   brand_finance: string;
   city_dubai: string;
