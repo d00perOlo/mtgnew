@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MTG GROUP — Unified Financial Advisory</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              mtg: {
+                bg: '#000000',
+                fg: '#ffffff',
+                gold: '#d7b25b',
+                muted: 'rgba(255, 255, 255, 0.74)',
+                muted2: 'rgba(255, 255, 255, 0.45)',
+                muted3: 'rgba(255, 255, 255, 0.28)',
+                line: 'rgba(255, 255, 255, 0.18)',
+                line2: 'rgba(255, 255, 255, 0.10)',
+                tile: 'rgba(255, 255, 255, 0.02)',
+                tile2: 'rgba(255, 255, 255, 0.04)',
+              }
+            },
+            fontFamily: {
+              head: ["Space Grotesk", "sans-serif"],
+              body: ["IBM Plex Sans", "sans-serif"],
+              mono: ["IBM Plex Mono", "monospace"],
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      html { scroll-behavior: smooth; }
+      body {
+        background: #000;
+        color: #fff;
+        font-family: 'IBM Plex Sans', sans-serif;
+        overflow-x: hidden;
+      }
+      /* Custom Grid Background overlay */
+      .bg-grid-overlay::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: 
+          radial-gradient(circle at 20% 30%, rgba(255,255,255,0.06), transparent 45%),
+          radial-gradient(circle at 75% 55%, rgba(255,255,255,0.05), transparent 55%),
+          linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+        background-size: auto, auto, 240px 240px, 240px 240px;
+        background-position: center, center, center, center;
+        opacity: 0.9;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-grid-overlay">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
