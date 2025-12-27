@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useLanguage } from '../App';
 
@@ -19,7 +18,7 @@ const Team: React.FC = () => {
           <span className="opacity-90">/</span> {t('s6_kicker')}
         </div>
         <h2 className="font-head text-[clamp(44px,6.6vw,86px)] font-bold leading-[0.95] tracking-tight uppercase">
-          ZESPÓŁ SPECIPLISTÓW.
+          {t('s6_title')}
         </h2>
         <p className="mt-4 border-l border-white/20 pl-5 font-body text-sm text-white/60 leading-[1.75] max-w-3xl">
           {t('s6_copy')}
